@@ -1,105 +1,108 @@
 #include <stdio.h>
 #include <string.h>
 
-
 #define MAX_PRODUCTOS 50
 #define IVA 0.12
 #define DESCUENTO_PROMO 0.10
 #define PROPINA 0.10
 
-typedef struct {
-   char nombre[50];
-   double precio;
-   int cantidad;
-} Producto;
+// Declaración de arreglos para almacenar los datos de los productos
+char nombres[MAX_PRODUCTOS][50];
+double precios[MAX_PRODUCTOS];
+int cantidades[MAX_PRODUCTOS];
 
-
+// Prototipos de las funciones
 void mostrarMenu();
-void agregarProducto(Producto productos[], int *contador);
-double calcularTotal(Producto productos[], int contador, double *descuento, double *iva, double *propina);
-void generarReporte(Producto productos[], int contador, double total, double descuento, double iva, double propina);
+void agregarProducto(char nombres[][50], double precios[], int cantidades[], int *contador);
+double calcularTotal(double precios[], int cantidades[], int contador);
+void mostrarReporte(char nombres[][50], double precios[], int cantidades[], int contador, double total);
 
 int main() {
-   Producto productos[MAX_PRODUCTOS];
-   int contador = 0;
-   char opcion;
+    int contador = 0; // Contador de productos
+    char opcion;
 
-   printf("Bienvenido al sistema de gestión de pedidos\n\n");
+    printf("Bienvenido al sistema de gestión de pedidos\n\n");
 
-   do {
-       mostrarMenu();
-       printf("Seleccione una opcion: ");
-       scanf(" %c", &opcion);
+    do {
+        mostrarMenu();
+        printf("Seleccione una opción: ");
+        scanf(" %c", &opcion);
 
-       switch (opcion) {
-           case '1':
-               agregarProducto(productos, &contador);
-               break;
-           case '2': {
-               double descuento = 0, iva = 0, propina = 0, total = 0;
-               total = calcularTotal(productos, contador, &descuento, &iva, &propina);
-               generarReporte(productos, contador, total, descuento, iva, propina);
-               break;
-           }
-           case '3':
-               printf("Saliendo del sistema. ¡Gracias por usar nuestro servicio!\n");
-               break;
-           default:
-               printf("Opción no válida. Intente nuevamente.\n");
-       }
-   } while (opcion != '3');
+        switch (opcion) {
+            case '1':
+                agregarProducto(nombres, precios, cantidades, &contador);
+                break;
+            case '2': {
+                double total = calcularTotal(precios, cantidades, contador);
+                mostrarReporte(nombres, precios, cantidades, contador, total);
+                break;
+            }
+            case '3':
+                printf("Saliendo del sistema. ¡Gracias por usar nuestro servicio!\n");
+                break;
+            default:
+                printf("Opción no válida. Intente nuevamente.\n");
+        }
+    } while (opcion != '3');
 
-   return 0;
+    return 0;
 }
 
 void mostrarMenu() {
-   printf("\n=== Menu Principal ===\n");
-   printf("1. Agregar producto al pedido\n");
-   printf("2. Generar reporte del pedido\n");
-   printf("3. Salir\n");
+    printf("\n=== Menú Principal ===\n");
+    printf("1. Agregar producto al pedido\n");
+    printf("2. Generar reporte del pedido\n");
+    printf("3. Salir\n");
 }
 
-void agregarProducto(Producto productos[], int *contador) {
-   if (*contador >= MAX_PRODUCTOS) {
-       printf("No se pueden agregar más productos.\n");
-       return;
-   }
+void agregarProducto(char nombres[][50], double precios[], int cantidades[], int *contador) {
+    if (*contador >= MAX_PRODUCTOS) {
+        printf("No se pueden agregar más productos.\n");
+        return;
+    }
 
-   Producto nuevoProducto;
-   printf("Ingrese el nombre del producto: ");
-   scanf(" %[^\n]", nuevoProducto.nombre);
-   printf("Ingrese el precio del producto: ");
-   scanf("%lf", &nuevoProducto.precio);
-   printf("Ingrese la cantidad del producto: ");
-   scanf("%d", &nuevoProducto.cantidad);
+    printf("Ingrese el nombre del producto: ");
+    scanf(" %[^\n]", nombres[*contador]);
+    printf("Ingrese el precio del producto: ");
+    scanf("%lf", &precios[*contador]);
+    printf("Ingrese la cantidad del producto: ");
+    scanf("%d", &cantidades[*contador]);
 
-   productos[*contador] = nuevoProducto;
-   (*contador)++;
-   printf("Producto agregado con éxito.\n");
+    (*contador)++;
+    printf("Producto agregado con éxito.\n");
 }
 
-double calcularTotal(Producto productos[], int contador, double *descuento, double *iva, double *propina) {
-   double subtotal = 0;
+double calcularTotal(double precios[], int cantidades[], int contador) {
+    double subtotal = 0, descuento = 0, iva = 0, propina = 0, total = 0;
 
-   for (int i = 0; i < contador; i++) {
-       subtotal += productos[i].precio * productos[i].cantidad;
-   }
+    for (int i = 0; i < contador; i++) {
+        subtotal += precios[i] * cantidades[i];
+    }
 
-   *descuento = subtotal * DESCUENTO_PROMO;
-   *iva = (subtotal - *descuento) * IVA;
-   *propina = (subtotal - *descuento) * PROPINA;
+    descuento = subtotal * DESCUENTO_PROMO;
+    iva = (subtotal - descuento) * IVA;
+    propina = (subtotal - descuento) * PROPINA;
+    total = subtotal - descuento + iva + propina;
 
-   return subtotal - *descuento + *iva + *propina;
+    return total;
 }
 
-void generarReporte(Producto productos[], int contador, double total, double descuento, double iva, double propina) {
-   printf("\n=== Reporte del Pedido ===\n");
-   for (int i = 0; i < contador; i++) {
-       printf("%s (x%d): $%.2f\n", productos[i].nombre, productos[i].cantidad, productos[i].precio * productos[i].cantidad);
-   }
-   printf("\nSubtotal: $%.2f\n", total - iva - propina + descuento);
-   printf("Descuento: $%.2f\n", descuento);
-   printf("IVA: $%.2f\n", iva);
-   printf("Propina: $%.2f\n", propina);
-   printf("Total: $%.2f\n", total);
+void mostrarReporte(char nombres[][50], double precios[], int cantidades[], int contador, double total) {
+    double subtotal = 0, descuento = 0, iva = 0, propina = 0;
+
+    printf("\n=== Reporte del Pedido ===\n");
+    for (int i = 0; i < contador; i++) {
+        printf("%s (x%d): $%.2f\n", nombres[i], cantidades[i], precios[i] * cantidades[i]);
+        subtotal += precios[i] * cantidades[i];
+    }
+
+    descuento = subtotal * DESCUENTO_PROMO;
+    iva = (subtotal - descuento) * IVA;
+    propina = (subtotal - descuento) * PROPINA;
+
+    printf("\nSubtotal: $%.2f\n", subtotal);
+    printf("Descuento: $%.2f\n", descuento);
+    printf("IVA: $%.2f\n", iva);
+    printf("Propina: $%.2f\n", propina);
+    printf("Total: $%.2f\n", total);
 }
