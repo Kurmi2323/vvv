@@ -6,19 +6,19 @@
 #define DESCUENTO_PROMO 0.10
 #define PROPINA 0.10
 
-// Declaración de arreglos para almacenar los datos de los productos
+
 char nombres[MAX_PRODUCTOS][50];
 double precios[MAX_PRODUCTOS];
 int cantidades[MAX_PRODUCTOS];
 
-// Prototipos de las funciones
+
 void mostrarMenu();
 void agregarProducto(char nombres[][50], double precios[], int cantidades[], int *contador);
 double calcularTotal(double precios[], int cantidades[], int contador);
 void mostrarReporte(char nombres[][50], double precios[], int cantidades[], int contador, double total);
 
 int main() {
-    int contador = 0; // Contador de productos
+    int contador = 0; 
     char opcion;
 
     printf("Bienvenido al sistema de gestión de pedidos\n\n");
@@ -26,15 +26,19 @@ int main() {
     do {
         mostrarMenu();
         printf("Seleccione una opción: ");
-        scanf(" %c", &opcion);
+        scanf(" %c", &opcion); 
 
         switch (opcion) {
             case '1':
                 agregarProducto(nombres, precios, cantidades, &contador);
                 break;
             case '2': {
-                double total = calcularTotal(precios, cantidades, contador);
-                mostrarReporte(nombres, precios, cantidades, contador, total);
+                if (contador == 0) {
+                    printf("No hay productos en el pedido. Agregue productos primero.\n");
+                } else {
+                    double total = calcularTotal(precios, cantidades, contador);
+                    mostrarReporte(nombres, precios, cantidades, contador, total);
+                }
                 break;
             }
             case '3':
@@ -62,11 +66,17 @@ void agregarProducto(char nombres[][50], double precios[], int cantidades[], int
     }
 
     printf("Ingrese el nombre del producto: ");
-    scanf(" %[^\n]", nombres[*contador]);
+    scanf(" %[^\n]", nombres[*contador]); 
     printf("Ingrese el precio del producto: ");
-    scanf("%lf", &precios[*contador]);
+    while (scanf("%lf", &precios[*contador]) != 1 || precios[*contador] < 0) {
+        printf("Por favor, ingrese un precio válido (positivo): ");
+        while (getchar() != '\n'); 
+    }
     printf("Ingrese la cantidad del producto: ");
-    scanf("%d", &cantidades[*contador]);
+    while (scanf("%d", &cantidades[*contador]) != 1 || cantidades[*contador] <= 0) {
+        printf("Por favor, ingrese una cantidad válida (entero positivo): ");
+        while (getchar() != '\n'); 
+    }
 
     (*contador)++;
     printf("Producto agregado con éxito.\n");
