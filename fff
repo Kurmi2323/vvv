@@ -1,118 +1,70 @@
 #include <stdio.h>
-#include <string.h>
-
 #define MAX_PRODUCTOS 50
 #define IVA 0.12
 #define DESCUENTO_PROMO 0.10
 #define PROPINA 0.10
 
-
 char nombres[MAX_PRODUCTOS][50];
 double precios[MAX_PRODUCTOS];
 int cantidades[MAX_PRODUCTOS];
 
-
-void mostrarMenu();
-void agregarProducto(char nombres[][50], double precios[], int cantidades[], int *contador);
-double calcularTotal(double precios[], int cantidades[], int contador);
-void mostrarReporte(char nombres[][50], double precios[], int cantidades[], int contador, double total);
+double calcularTotal(int contador, double *subtotal, double *descuento, double *iva, double *propina);
 
 int main() {
-    int contador = 0; 
+    int contador = 0;
     char opcion;
-
-    printf("Bienvenido al sistema de gestión de pedidos\n\n");
+    double subtotal, descuento, iva, propina, total;
 
     do {
-        mostrarMenu();
-        printf("Seleccione una opción: ");
-        scanf(" %c", &opcion); 
+        printf("\n1. Agregar producto\n2. Calcular total\n3. Salir\n");
+        scanf(" %c", &opcion);
 
-        switch (opcion) {
-            case '1':
-                agregarProducto(nombres, precios, cantidades, &contador);
-                break;
-            case '2': {
-                if (contador == 0) {
-                    printf("No hay productos en el pedido. Agregue productos primero.\n");
+        switch(opcion) {
+            case '1': 
+                if (contador < MAX_PRODUCTOS) {
+                    printf("Nombre del producto: ");
+                    scanf(" %[^\n]", nombres[contador]);
+                    printf("Precio: ");
+                    scanf("%lf", &precios[contador]);
+                    printf("Cantidad: ");
+                    scanf("%d", &cantidades[contador]);
+                    contador++;
                 } else {
-                    double total = calcularTotal(precios, cantidades, contador);
-                    mostrarReporte(nombres, precios, cantidades, contador, total);
+                    printf("Límite de productos alcanzado.\n");
                 }
                 break;
-            }
-            case '3':
-                printf("Saliendo del sistema. ¡Gracias por usar nuestro servicio!\n");
+            case '2': 
+                if (contador > 0) {
+                    total = calcularTotal(contador, &subtotal, &descuento, &iva, &propina);
+                    printf("Subtotal: $%.2f\n", subtotal);
+                    printf("Descuento: $%.2f\n", descuento);
+                    printf("IVA: $%.2f\n", iva);
+                    printf("Propina: $%.2f\n", propina);
+                    printf("Total: $%.2f\n", total);
+                } else {
+                    printf("No hay productos.\n");
+                }
+                break;
+            case '3': 
+                printf("Saliendo...\n"); 
                 break;
             default:
-                printf("Opción no válida. Intente nuevamente.\n");
+                printf("Opción inválida.\n");
         }
     } while (opcion != '3');
 
     return 0;
 }
 
-void mostrarMenu() {
-    printf("\n=== Menú Principal ===\n");
-    printf("1. Agregar producto al pedido\n");
-    printf("2. Generar reporte del pedido\n");
-    printf("3. Salir\n");
-}
-
-void agregarProducto(char nombres[][50], double precios[], int cantidades[], int *contador) {
-    if (*contador >= MAX_PRODUCTOS) {
-        printf("No se pueden agregar más productos.\n");
-        return;
-    }
-
-    printf("Ingrese el nombre del producto: ");
-    scanf(" %[^\n]", nombres[*contador]); 
-    printf("Ingrese el precio del producto: ");
-    while (scanf("%lf", &precios[*contador]) != 1 || precios[*contador] < 0) {
-        printf("Por favor, ingrese un precio válido (positivo): ");
-        while (getchar() != '\n'); 
-    }
-    printf("Ingrese la cantidad del producto: ");
-    while (scanf("%d", &cantidades[*contador]) != 1 || cantidades[*contador] <= 0) {
-        printf("Por favor, ingrese una cantidad válida (entero positivo): ");
-        while (getchar() != '\n'); 
-    }
-
-    (*contador)++;
-    printf("Producto agregado con éxito.\n");
-}
-
-double calcularTotal(double precios[], int cantidades[], int contador) {
-    double subtotal = 0, descuento = 0, iva = 0, propina = 0, total = 0;
-
+double calcularTotal(int contador, double *subtotal, double *descuento, double *iva, double *propina) {
+    *subtotal = 0;
     for (int i = 0; i < contador; i++) {
-        subtotal += precios[i] * cantidades[i];
+        *subtotal += precios[i] * cantidades[i];
     }
-
-    descuento = subtotal * DESCUENTO_PROMO;
-    iva = (subtotal - descuento) * IVA;
-    propina = (subtotal - descuento) * PROPINA;
-    total = subtotal - descuento + iva + propina;
-
-    return total;
-}
-
-void mostrarReporte(char nombres[][50], double precios[], int cantidades[], int contador, double total) {
-    double subtotal = 0, descuento = 0, iva = 0, propina = 0;
-
-    printf("\n=== Reporte del Pedido ===\n");
-    for (int i = 0; i < contador; i++) {
-        printf("%s (x%d): $%.2f\n", nombres[i], cantidades[i], precios[i] * cantidades[i]);
-        subtotal += precios[i] * cantidades[i];
-    }
-
-    descuento = subtotal * DESCUENTO_PROMO;
-    iva = (subtotal - descuento) * IVA;
-    propina = (subtotal - descuento) * PROPINA;
-
-    printf("\nSubtotal: $%.2f\n", subtotal);
-    printf("Descuento: $%.2f\n", descuento);
-    printf("IVA: $%.2f\n", iva);
-    printf("Propina: $%.2f\n", propina);
-    printf("Total: $%.2f\n", total);
+    
+    *descuento = *subtotal * DESCUENTO_PROMO;
+    *iva = (*subtotal - *descuento) * IVA;
+    *propina = (*subtotal - *descuento) * PROPINA;
+    
+    return *subtotal - *descuento + *iva + *propina;
 }
